@@ -1,21 +1,64 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import {Alert} from "react-native"
+import Loading from "./Loading";
+import * as Location from "expo-location";
+import axios from "axios";
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+const API_KEY = "bd3bb9c238f822b8ac4cfebe0bb3ba70"
+
+export default class extends React.Component{
+  state = {
+    isLoading : true
+  }
+  getWeather = async(latitude, longitude) => {
+    const {data} = await axios.get(
+      // ` <- 백틱을 사용한다
+      `http://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&APPID=${API_KEY}}`
+      );
+  }
+  getLocation = async() =>{
+    try {
+      await Location.requestPermissionsAsync();
+      const {coords: {latitude, longitude}} = await Location.getCurrentPositionAsync();
+      this.getWeather(latitude, longitude);
+      this.setState({isLoading: false});
+    } catch (error) {
+      Alert.alert("Can't find you.", "So sad");
+    }
+    
+  }
+  componentDidMount(){
+    this.getLocation();
+  }
+  render(){
+    const {isLoading} = this.state;
+    return isLoading ? <Loading /> : null;
+  }
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+
+
+// import { StyleSheet, Text, View } from 'react-native';
+
+// export default function App() {
+//   return (
+//     <View style={styles.container}>
+//       <Text>Zmzmzm</Text>
+//       <StatusBar style="auto" />
+//     </View>
+//   );
+// }
+
+// const styles = StyleSheet.create({
+//   container: {
+//     // 기본적으로 flex direction이 row가 아닌 column이다.
+//     // flex값에 따라 화면에서 비율을 차지한다.
+//     flex: 1,
+//     backgroundColor: '#fff',
+//     alignItems: 'center',
+//     justifyContent: 'center',
+//   },
+// });
+
+// app.json은 expo가 읽기 위한 파일이다.
